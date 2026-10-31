@@ -2,8 +2,10 @@ from pathlib import Path
 from reportlab.pdfgen import canvas
 
 report = (
-    "Hello from Prashant's automation project!\n"
-    "Python script executed successfully.\n"
+    "Prashant's Jenkins Pipeline - Version 2\n"
+    "Code fetched from GitHub.\n"
+    "Python script executed inside Docker.\n"
+    "TXT and PDF reports generated successfully.\n"
 )
 
 output_folder = Path(__file__).resolve().parent / "reports"
