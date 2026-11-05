@@ -6,34 +6,32 @@ pipeline {
     }
 
     stages {
-        stage('Check Docker') {
-            steps {
-                sh 'docker version'
-            }
-        }
-
-        stage('Build Image') {
-            steps {
-                sh 'docker build -t jenkins-python-practice .'
-            }
-        }
-
-        stage('Generate Reports') {
+        stage('Prepare Environment') {
             steps {
                 sh '''
+                    python3 -m venv .venv
+                    .venv/bin/python -m pip install -r requirements.txt
+
                     mkdir -p reports
-                    docker run --rm \
-                      -v "$PWD/reports:/app/reports" \
-                      jenkins-python-practice
+                    rm -f reports/output.txt reports/output.pdf reports/results.xml
                 '''
             }
         }
 
-        stage('Save Reports') {
+        stage('Run Selenium Tests') {
             steps {
-                archiveArtifacts artifacts: 'reports/output.txt,reports/output.pdf',
-                                 fingerprint: true
+                sh '.venv/bin/python -m pytest -v'
             }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts(
+                artifacts: 'reports/output.txt,reports/output.pdf',
+                allowEmptyArchive: true,
+                fingerprint: true
+            )
         }
     }
 }

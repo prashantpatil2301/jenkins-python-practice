@@ -1,33 +1,33 @@
 from pathlib import Path
-from reportlab.pdfgen import canvas
+from xml.sax.saxutils import escape
 
-report = (
-    "Prashant's Jenkins Pipeline - Version 2\n"
-    "Code fetched from GitHub.\n"
-    "Python script executed inside Docker.\n"
-    "TXT and PDF reports generated successfully.\n"
-)
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 
-output_folder = Path(__file__).resolve().parent / "reports"
-output_folder.mkdir(exist_ok=True)
 
-output_file = output_folder / "output.txt"
-output_file.write_text(report, encoding="utf-8")
+def create_pdf():
+    reports = Path(__file__).resolve().parent / "reports"
 
-print(report)
-print(f"Report saved to: {output_file}")
+    log_file = reports / "output.txt"
+    pdf_file = reports / "output.pdf"
 
-pdf_file = output_folder / "output.pdf"
+    styles = getSampleStyleSheet()
 
-pdf = canvas.Canvas(str(pdf_file))
-pdf.setFont("Helvetica", 12)
+    content = [
+        Paragraph("Selenium Execution Report", styles["Title"]),
+        Spacer(1, 12),
+    ]
 
-y_position = 800
+    for line in log_file.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            content.append(
+                Paragraph(escape(line), styles["BodyText"])
+            )
+        else:
+            content.append(Spacer(1, 6))
 
-for line in report.splitlines():
-    pdf.drawString(50, y_position, line)
-    y_position -= 20
+    document = SimpleDocTemplate(str(pdf_file), pagesize=A4)
+    document.build(content)
 
-pdf.save()
-
-print(f"PDF saved to: {pdf_file}")
+    print(f"PDF saved to: {pdf_file}")
