@@ -26,16 +26,17 @@ pipeline {
     }
 
     post {
-    always {
-        script {
-            try {
-                junit 'reports/results.xml'
-            } finally {
-                archiveArtifacts(
-                    artifacts: 'reports/output.txt,reports/output.pdf,reports/results.xml',
-                    allowEmptyArchive: true,
-                    fingerprint: true
-                )
+        always {
+            script {
+                try {
+                    junit 'reports/results.xml'
+                } finally {
+                    archiveArtifacts(
+                        artifacts: 'reports/output.txt,reports/output.pdf,reports/results.xml',
+                        allowEmptyArchive: true,
+                        fingerprint: true
+                    )
+                }
             }
         }
     }
