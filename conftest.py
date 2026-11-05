@@ -1,5 +1,9 @@
 import logging
 from pathlib import Path
+import os
+
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 import pytest
 from selenium import webdriver
@@ -13,24 +17,37 @@ URL = "https://www.prashantqa.com/Practice/index.html"
 def pytest_configure(config):
     Path("reports").mkdir(exist_ok=True)
 
-
 @pytest.fixture
 def driver(request):
     logger.info("TEST START: %s", request.node.name)
-    logger.info("Opening Chrome")
 
-    browser = webdriver.Chrome()
+    options = Options()
+    options.add_argument("--headless=new")
+    options.add_argument("--window-size=1920,1080")
+
+    if os.getenv("RUN_IN_DOCKER") == "true":
+        options.binary_location = "/usr/bin/chromium"
+
+        # Our learning container runs as root.
+        options.add_argument("--no-sandbox")
+
+        service = Service("/usr/bin/chromedriver")
+        logger.info("Opening headless Chromium inside Docker")
+        browser = webdriver.Chrome(
+            service=service,
+            options=options,
+        )
+    else:
+        logger.info("Opening headless Chrome locally")
+        browser = webdriver.Chrome(options=options)
 
     try:
-        browser.maximize_window()
         logger.info("Navigating to %s", URL)
         browser.get(URL)
-
         yield browser
     finally:
-        logger.info("Closing Chrome")
+        logger.info("Closing browser")
         browser.quit()
-
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):

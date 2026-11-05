@@ -6,21 +6,34 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Environment') {
+        stage('Prepare Reports') {
             steps {
                 sh '''
-                    python3 -m venv .venv
-                    .venv/bin/python -m pip install -r requirements.txt
-
                     mkdir -p reports
                     rm -f reports/output.txt reports/output.pdf reports/results.xml
                 '''
             }
         }
 
+        stage('Check Docker') {
+            steps {
+                sh 'docker version'
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                sh 'docker build -t jenkins-python-practice .'
+            }
+        }
+
         stage('Run Selenium Tests') {
             steps {
-                sh '.venv/bin/python -m pytest -v --junitxml=reports/results.xml'
+                sh '''
+                    docker run --rm --shm-size=1g \
+                      -v "$PWD/reports:/app/reports" \
+                      jenkins-python-practice
+                '''
             }
         }
     }
