@@ -20,18 +20,23 @@ pipeline {
 
         stage('Run Selenium Tests') {
             steps {
-                sh '.venv/bin/python -m pytest -v'
+                sh '.venv/bin/python -m pytest -v --junitxml=reports/results.xml'
             }
         }
     }
 
     post {
-        always {
-            archiveArtifacts(
-                artifacts: 'reports/output.txt,reports/output.pdf',
-                allowEmptyArchive: true,
-                fingerprint: true
-            )
+    always {
+        script {
+            try {
+                junit 'reports/results.xml'
+            } finally {
+                archiveArtifacts(
+                    artifacts: 'reports/output.txt,reports/output.pdf,reports/results.xml',
+                    allowEmptyArchive: true,
+                    fingerprint: true
+                )
+            }
         }
     }
 }
