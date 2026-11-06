@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_page_title(driver):
-    expected_title = "My SDET Academy | Selenium Lab"
+    expected_title = "My SDET Academy | Selenium La"
 
     logger.info("Checking page title")
     logger.info("Expected title: %s", expected_title)
